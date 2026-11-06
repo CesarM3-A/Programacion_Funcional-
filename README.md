@@ -1,189 +1,244 @@
 # Trabajo de Consulta: Funciones Anónimas
+
 **Materia:** Programación Funcional  
-**Lenguajes:** Scala • Java • Python  
-**Autor:** [Tu nombre]  
-**Fecha:** Noviembre 2026  
+**Lenguajes:** Scala, Java y Python  
+**Autor:** CesarM3-A  
+**Fecha:** Noviembre de 2026
 
 ---
 
-## Parte 1 – Explorar: La programación funcional en el mundo real
+## Contenido
 
-### Caso 1: Apache Spark (Procesamiento de Big Data)
-* **Problema que resuelven:** Procesar terabytes de datos distribuidos en clústeres de manera rápida y tolerante a fallos.
-* **Lenguaje/Herramienta:** Scala (Apache Spark).
-* **Ventaja del enfoque funcional:** Spark usa RDDs (Resilient Distributed Datasets) y DataFrames. Las funciones anónimas (`map`, `filter`, `reduce`) permiten transformar datos de forma inmutable y distribuir el procesamiento en múltiples nodos sin efectos secundarios.
-* **Fuente:** Documentación oficial de Apache Spark (https://spark.apache.org/docs/latest/rdd-programming-guide.html).
-* **Fragmento de código real:**
+1. [Parte 1. Explorar: la programación funcional en el mundo real](#parte-1-explorar-la-programación-funcional-en-el-mundo-real)
+2. [Parte 2. Entender: qué es una función anónima](#parte-2-entender-qué-es-una-función-anónima)
+3. [Parte 3. Aplicar: tipos de problemas resueltos](#parte-3-aplicar-tipos-de-problemas-resueltos)
+4. [Parte 4. Ampliar: cuatro operaciones nuevas](#parte-4-ampliar-cuatro-operaciones-nuevas)
+5. [Parte 5. Comparar y concluir](#parte-5-comparar-y-concluir)
+6. [Referencias](#referencias)
+
+---
+
+## Parte 1. Explorar: la programación funcional en el mundo real
+
+### Caso 1: Apache Spark (procesamiento de Big Data)
+
+| Aspecto | Descripción |
+| :--- | :--- |
+| Problema que resuelve | Procesar terabytes de datos distribuidos en clústeres de forma rápida, escalable y tolerante a fallos. |
+| Lenguaje o herramienta | Scala (Apache Spark) |
+| Ventaja del enfoque funcional | Spark trabaja con RDDs (*Resilient Distributed Datasets*). Las funciones anónimas (`map`, `filter`, `reduce`) transforman los datos sin modificar los originales, lo que permite repartir el procesamiento entre varios nodos y recalcular solo la parte perdida si alguno falla. |
+| Fuente | [Documentación oficial de Apache Spark](https://spark.apache.org/docs/latest/rdd-programming-guide.html) |
+
+Fragmento de código:
+
 ```scala
 // Contar palabras en un archivo de texto distribuido
 val conteo = sc.textFile("hdfs://datos/archivo.txt")
-  .flatMap(linea => linea.split(" ")) // Lambda que aplana las líneas en palabras
-  .map(palabra => (palabra, 1))       // Lambda que mapea cada palabra a una tupla
-  .reduceByKey((a, b) => a + b)       // Lambda que acumula los conteos
+  .flatMap(linea => linea.split(" ")) // Lambda que separa cada línea en palabras
+  .map(palabra => (palabra, 1))       // Lambda que asocia cada palabra con un 1
+  .reduceByKey((a, b) => a + b)       // Lambda que suma los conteos por palabra
 ```
 
-### Caso 2: Java Streams en Sistemas Empresariales (Netflix / Banca)
-* **Problema que resuelven:** Filtrar, transformar y agregar grandes volúmenes de transacciones o eventos de usuarios en tiempo real.
-* **Lenguaje/Herramienta:** Java (Java 8+ Streams API).
-* **Ventaja del enfoque funcional:** Permite escribir código declarativo y paralelo. En lugar de bucles `for` mutables, se encadenan operaciones que el motor de Streams puede optimizar y ejecutar en múltiples hilos (`parallelStream()`).
-* **Fuente:** Blog técnico de Netflix sobre su migración a arquitecturas reactivas y uso intensivo de Java Streams para procesamiento de eventos.
+### Caso 2: Java Streams en sistemas empresariales (banca y fintech)
+
+| Aspecto | Descripción |
+| :--- | :--- |
+| Problema que resuelve | Filtrar, transformar y agregar grandes volúmenes de transacciones o eventos de usuarios, por ejemplo en la detección de fraude. |
+| Lenguaje o herramienta | Java (Streams API, desde Java 8) |
+| Ventaja del enfoque funcional | Permite escribir código declarativo y fácil de paralelizar. En lugar de bucles `for` con estado mutable, se encadenan operaciones que pueden ejecutarse en varios hilos mediante `parallelStream()`. |
+| Fuente | [Oracle Java Tutorials: Lambda Expressions](https://docs.oracle.com/javase/tutorial/java/javaOO/lambdaexpressions.html) |
 
 ---
 
-## Parte 2 – Entender: ¿Qué es una función anónima?
+## Parte 2. Entender: qué es una función anónima
 
-### ¿Qué es y de dónde viene el nombre lambda?
-Una función anónima es un bloque de código que realiza una tarea específica pero que no está vinculada a un identificador (nombre) al ser declarada. El nombre "lambda" viene del *Cálculo Lambda* de Alonzo Church (1930), un sistema formal para definir funciones y aplicarlas, que es la base teórica de la programación funcional.
+### Definición y origen del nombre
+
+Una función anónima es un bloque de código que cumple una tarea específica pero que no se asocia a un identificador al momento de declararse. El nombre "lambda" proviene del cálculo lambda, formulado por Alonzo Church en la década de 1930, un sistema formal para definir y aplicar funciones que sirve como base teórica de la programación funcional.
 
 ### Diferencia con una función nombrada
+
 ```scala
-// Función nombrada: tiene un identificador (calcularIVA)
+// Función nombrada: tiene un identificador explícito
 def calcularIVA(precio: Double): Double = precio * 0.12
 
-// Función anónima (Lambda): no tiene nombre, se define y usa en el momento
+// Función anónima: no tiene nombre, se define y se usa en el mismo lugar
 (precio: Double) => precio * 0.12
 ```
 
-### Ciudadanos de primera clase
-Significa que las funciones pueden ser tratadas como cualquier otra variable: pueden ser asignadas a variables, pasadas como argumentos a otras funciones, o devueltas como resultado. Esto permite pasar una lambda directamente a métodos como `map` o `filter` para definir *cómo* procesar los datos sin necesidad de crear métodos auxiliares en la clase.
+### Funciones como ciudadanos de primera clase
 
-### ¿Qué es un closure?
-Es una función anónima que "recuerda" y utiliza variables definidas fuera de su propio ámbito (scope).
+Que las funciones sean ciudadanos de primera clase significa que se tratan como cualquier otro valor: pueden asignarse a variables, pasarse como argumentos a otras funciones o devolverse como resultado. Por esta razón es posible pasar una lambda directamente a métodos como `map` o `filter`, ya que están diseñados para recibir una función como parámetro.
+
+### Closure
+
+Un closure es una función anónima que conserva y utiliza variables definidas fuera de su propio ámbito (*scope*) en el momento en que fue creada.
+
 ```scala
 val tasaImpuesto = 0.15 // Variable externa
-val aplicarImpuesto = (precio: Double) => precio * tasaImpuesto // Closure: captura tasaImpuesto
+
+// Closure: la lambda captura la variable tasaImpuesto
+val aplicarImpuesto = (precio: Double) => precio * tasaImpuesto
 ```
 
 ---
 
-## Parte 3 – Aplicar: Tipos de problemas resueltos
+## Parte 3. Aplicar: tipos de problemas resueltos
 
-Para todos los ejemplos usamos la misma lista de objetos `Producto` (12 elementos) para mantener la consistencia. El código completo y ejecutable está en las carpetas `scala/`, `java/` y `python/`.
+Para mantener la consistencia, todos los ejemplos usan la misma lista de objetos `Producto(nombre: String, categoria: String, precio: Double, stock: Int)`, con 12 elementos.
 
-### 1. Selección (filter)
-* **Situación real:** Un banco necesita detectar las transacciones (productos) mayores a $100 para aplicar un seguro.
-* **Solución:** Filtrar la lista usando una lambda que evalúe `precio > 100`.
+### 1. Selección (`filter`)
 
-📸 **CAPTURA 1:** Aquí va la salida de la consola de los 3 lenguajes mostrando los productos con precio > 100.
-![Selección - Scala](img/01_filter_scala.png)
-![Selección - Java](img/02_filter_java.png)
-![Selección - Python](img/03_filter_python.png)
+**Situación:** una tienda necesita identificar los productos con precio mayor a $100 para ofrecer garantía extendida.
 
-### 2. Transformación (map)
-* **Situación real:** Black Friday. Necesitamos aplicar un descuento del 10% a todos los productos para generar las nuevas etiquetas de precio.
-* **Solución:** Mapear cada producto multiplicando su precio por `0.9`.
+| Lenguaje | Solución |
+| :--- | :--- |
+| Scala | `productos.filter(p => p.precio > 100)` |
+| Java | `productos.stream().filter(p -> p.getPrecio() > 100).collect(Collectors.toList())` |
+| Python | `list(filter(lambda p: p.precio > 100, productos))` |
 
-📸 **CAPTURA 2:** Aquí va la salida mostrando el primer producto con el precio ya con descuento.
-![Transformación - Scala](img/04_map_scala.png)
-![Transformación - Java](img/05_map_java.png)
-![Transformación - Python](img/06_map_python.png)
+**Salida esperada (en los tres lenguajes):** lista con `[Laptop, Monitor, Silla, Escritorio, Audífonos]`.
 
-### 3. Validación (forall)
-* **Situación real:** El sistema de checkout debe verificar si *todos* los productos en el carrito tienen stock disponible (`stock > 0`) antes de procesar el pago.
-* **Solución:** Usar `forall` con una lambda que retorne `producto.stock > 0`.
+### 2. Transformación (`map`)
 
-📸 **CAPTURA 3:** Aquí va la salida mostrando `true` (todos tienen stock).
-![Validación - Scala](img/07_forall_scala.png)
-![Validación - Java](img/08_forall_java.png)
-![Validación - Python](img/09_forall_python.png)
+**Situación:** durante el Black Friday se aplica un descuento del 10 % a todos los productos para generar las nuevas etiquetas de precio.
 
-### 4. Acumulación (foldLeft / reduce)
-* **Situación real:** Calcular el valor total del inventario de la bodega (sumar `precio * stock` de cada producto).
-* **Solución:** Acumular el valor inicial en 0 y sumar el valor de cada producto paso a paso.
+| Lenguaje | Solución |
+| :--- | :--- |
+| Scala | `productos.map(p => p.precio * 0.9)` |
+| Java | `productos.stream().map(p -> p.getPrecio() * 0.9).collect(Collectors.toList())` |
+| Python | `list(map(lambda p: p.precio * 0.9, productos))` |
 
-📸 **CAPTURA 4:** Aquí va la salida mostrando el valor total del inventario (debe dar el mismo número en los 3 lenguajes).
-![Acumulación - Scala](img/10_fold_scala.png)
-![Acumulación - Java](img/11_fold_java.png)
-![Acumulación - Python](img/12_fold_python.png)
+**Salida esperada (en los tres lenguajes):** una lista de precios cuyo primer elemento (Laptop) es `765.0`.
+
+### 3. Validación (`forall`)
+
+**Situación:** el sistema de pago debe verificar que todos los productos del carrito tengan stock disponible (`stock > 0`) antes de procesar la compra.
+
+| Lenguaje | Solución |
+| :--- | :--- |
+| Scala | `productos.forall(p => p.stock > 0)` |
+| Java | `productos.stream().allMatch(p -> p.getStock() > 0)` |
+| Python | `all(map(lambda p: p.stock > 0, productos))` |
+
+**Salida esperada:** `true` (en Python se muestra como `True`).
+
+### 4. Acumulación (`foldLeft` / `reduce`)
+
+**Situación:** calcular el valor total del inventario de la bodega, sumando `precio * stock` de cada producto.
+
+| Lenguaje | Solución |
+| :--- | :--- |
+| Scala | `productos.foldLeft(0.0)((acc, p) => acc + (p.precio * p.stock))` |
+| Java | `productos.stream().mapToDouble(p -> p.getPrecio() * p.getStock()).sum()` |
+| Python | `reduce(lambda acc, p: acc + (p.precio * p.stock), productos, 0.0)` (requiere `from functools import reduce`) |
+
+**Salida esperada (en los tres lenguajes):** `101075.0`
 
 ---
 
-## Parte 4 – Ampliar: Cuatro operaciones nuevas
+## Parte 4. Ampliar: cuatro operaciones nuevas
 
-El código completo está en `operaciones/OperacionesNuevas.scala`.
+El código completo y ejecutable de esta sección se encuentra en [`operaciones/OperacionesNuevas.scala`](operaciones/OperacionesNuevas.scala).
 
 ### Ficha 1: `groupBy`
-1. **Qué hace:** Agrupa los elementos de una colección en un Map según el resultado de aplicar una función a cada elemento.
-2. **Lambda que recibe:** Recibe una función `A => K` (donde K es la clave de agrupación).
-3. **Problema que resuelve:** Agrupar productos por categoría para generar reportes por departamento. (Tipo: *Agrupación*).
 
-📸 **CAPTURA 5:** Salida del `groupBy` mostrando cuántos productos hay por categoría.
-![groupBy](img/13_groupBy.png)
+| Aspecto | Descripción |
+| :--- | :--- |
+| Qué hace | Agrupa los elementos de una colección en un `Map`, donde la clave es el resultado de aplicar una función a cada elemento. |
+| Lambda que recibe | `A => K` (función que devuelve la clave de agrupación) |
+| Problema que resuelve | Agrupar productos por categoría para generar reportes de inventario por departamento (tipo: agrupación). |
 
-### Ficha 2: `sortBy`
-1. **Qué hace:** Ordena los elementos de la colección según el valor devuelto por una función de comparación.
-2. **Lambda que recibe:** Recibe una función `A => B` donde B es un tipo ordenable (Int, Double, String).
-3. **Problema que resuelve:** Mostrar los productos más caros en la parte superior de la página web. (Tipo: *Ordenamiento*).
-
-📸 **CAPTURA 6:** Salida del `sortBy` mostrando el top 3 de productos más caros.
-![sortBy](img/14_sortBy.png)
-
-### Ficha 3: `find`
-1. **Qué hace:** Devuelve el primer elemento que cumple una condición, envuelto en un `Option` (Some o None).
-2. **Lambda que recibe:** Recibe un predicado `A => Boolean`.
-3. **Problema que resuelve:** Buscar si existe un producto específico por su ID o nombre exacto para mostrar su detalle. (Tipo: *Búsqueda*).
-
-📸 **CAPTURA 7:** Salida del `find` buscando el producto "Monitor".
-![find](img/15_find.png)
-
-### Ficha 4: `partition`
-1. **Qué hace:** Divide la colección en dos tuplas de listas: la primera con los elementos que cumplen la condición, la segunda con los que no.
-2. **Lambda que recibe:** Recibe un predicado `A => Boolean`.
-3. **Problema que resuelve:** Separar rápidamente productos con descuento (precio < 50) de productos premium (precio >= 50). (Tipo: *División/Selección dual*).
-
-📸 **CAPTURA 8:** Salida del `partition` mostrando cuántos productos quedaron en cada grupo.
-![partition](img/16_partition.png)
-
-### Combinación de operaciones
-**Pregunta:** ¿Qué categorías tienen un precio promedio mayor a $100 y al menos 30 unidades en stock total, ordenadas por stock total de mayor a menor?
-
-**Cadena de operaciones:**
 ```scala
-productos
-  .groupBy(_.categoria)                                    // 1. Agrupa por categoría (Nueva)
-  .map { case (cat, prods) => 
-    (cat, prods.map(_.precio).sum / prods.size, prods.map(_.stock).sum) 
-  }                                                        // 2. Calcula promedio y stock total (Vista en clase: map)
-  .filter { case (_, avg, stock) => avg > 100 && stock >= 30 } // 3. Filtra (Vista en clase)
-  .toList
-  .sortBy(-_._3)                                           // 4. Ordena por stock descendente (Nueva)
+productos.groupBy(_.categoria).map { case (c, p) => (c, p.size) }
 ```
 
-📸 **CAPTURA 9:** Salida de la combinación mostrando las categorías filtradas y ordenadas.
-![Combinación](img/17_combinacion.png)
+### Ficha 2: `sortBy`
+
+| Aspecto | Descripción |
+| :--- | :--- |
+| Qué hace | Ordena los elementos de la colección según el valor que devuelve una función. |
+| Lambda que recibe | `A => B` (donde `B` es un tipo ordenable, como `Int` o `Double`) |
+| Problema que resuelve | Mostrar los productos más caros en la parte superior de una tienda en línea (tipo: ordenamiento). |
+
+```scala
+productos.sortBy(-_.precio).take(3).map(_.nombre)
+```
+
+### Ficha 3: `find`
+
+| Aspecto | Descripción |
+| :--- | :--- |
+| Qué hace | Devuelve el primer elemento que cumple una condición, envuelto en un `Option` (`Some` o `None`). |
+| Lambda que recibe | `A => Boolean` (un predicado) |
+| Problema que resuelve | Verificar si existe un producto con un nombre exacto para mostrar su ficha de detalle (tipo: búsqueda). |
+
+```scala
+productos.find(_.nombre == "Monitor").map(_.precio)
+```
+
+### Ficha 4: `partition`
+
+| Aspecto | Descripción |
+| :--- | :--- |
+| Qué hace | Divide la colección en una tupla de dos listas: la primera con los elementos que cumplen la condición y la segunda con los que no. |
+| Lambda que recibe | `A => Boolean` (un predicado) |
+| Problema que resuelve | Separar el inventario en productos premium y económicos para aplicar estrategias de marketing distintas (tipo: división o selección dual). |
+
+```scala
+productos.partition(_.precio >= 100)
+```
+
+### Combinación de operaciones
+
+**Pregunta:** ¿qué categorías tienen un precio promedio mayor a $100 y al menos 30 unidades en stock total, ordenadas por stock total de mayor a menor?
+
+```scala
+productos
+  .groupBy(_.categoria)                                    // 1. Agrupa por categoría (nueva: groupBy)
+  .map { case (cat, prods) =>
+    (cat, prods.map(_.precio).sum / prods.size, prods.map(_.stock).sum)
+  }                                                        // 2. Calcula promedio y stock total (vista en clase: map)
+  .filter { case (_, avg, stock) => avg > 100 && stock >= 30 } // 3. Filtra las que cumplen ambas condiciones (vista en clase: filter)
+  .toList
+  .sortBy(-_._3)                                           // 4. Ordena por stock descendente (nueva: sortBy)
+```
 
 ---
 
-## Parte 5 – Comparar y concluir
+## Parte 5. Comparar y concluir
 
-### 5.1 Scala, Java y Python frente a frente
+### 5.1 Comparación entre Scala, Java y Python
 
 | Criterio | Scala | Java | Python |
 | :--- | :--- | :--- | :--- |
-| **Sintaxis de la lambda** | `(x) => expresion` (súper directa) | `(x) -> expresion` (la flecha gorda) | `lambda x: expresion` |
-| **Cómo se declara el tipo** | El compilador casi siempre lo adivina, pero puedes forzarlo `(x: Int)` | A veces lo infiere, pero toca ser explícito `(int x)` | No se declara nada, es dinámico. |
-| **Operaciones con listas** | Vienen nativas y son súper potentes (`List`, `Seq`). | Tocó usar la API de `Stream` y luego `collect`. | Nativas como `map`/`filter` o tirando de `functools`. |
-| **Restricción del lenguaje** | Las variables que captura el closure deben ser `val` (inmutables). | Las variables externas tienen que ser `final` o "efectivamente final". | No hay restricciones fuertes, pero hay que cuidar el scope. |
-| **Legibilidad (mi opinión)** | ⭐⭐⭐⭐⭐ La que mejor fluye, se lee casi como inglés. | ⭐⭐⭐ Un poco verbosa, mucho código de relleno. | ⭐⭐⭐⭐ Muy limpia, pero el `lambda` se siente limitado. |
+| Sintaxis de la lambda | `(x) => expresion` | `(x) -> expresion` | `lambda x: expresion` |
+| Declaración del tipo | Inferencia o tipo explícito `(x: Int)` | Inferencia por contexto o tipo explícito `(int x)` | No se declara (tipado dinámico) |
+| Operaciones con listas | Nativas en `List` y `Seq`, con una API muy completa | A través de la API `Stream` y luego `collect` | Nativas (`map`, `filter`) o mediante `functools` |
+| Variables capturadas | Pueden ser `val` o `var`, aunque lo recomendable es usar `val` | Deben ser `final` o efectivamente finales | Sin restricciones fuertes, pero hay que cuidar el *scope* |
+| Legibilidad (opinión personal) | Alta: el encadenamiento de operaciones se lee con facilidad | Media: es más verbosa y requiere código adicional | Media-alta: es limpia, pero `lambda` es limitada |
 
-**Reflexión personal:**
+### Reflexión personal
 
-La verdad, el lenguaje en el que se sintió más natural resolver todo fue **Scala**. Como está hecho para esto desde el principio, encadenar un `.filter` con un `.map` se siente fluido y el código queda cortito y al grano. 
+El lenguaje en el que resultó más natural resolver los problemas fue Scala. Al haber sido diseñado desde el inicio con soporte para programación funcional, encadenar un `filter` con un `map` resulta fluido y el código queda corto y claro.
 
-**Java** se sintió un poco más pesado. No porque no pueda hacerlo, sino por todo el "boilerplate" que toca escribir: crear el `Stream`, hacer la operación y luego acordarse de hacer el `.collect()` para volver a tener una lista. Se nota que la programación funcional se le añadió después, no nació con ella.
+Java se sintió más pesado. No es que no permita hacerlo, sino que exige más código auxiliar: crear el `Stream`, aplicar la operación y recordar llamar a `collect()` para volver a obtener una lista. Esto da la impresión de que la programación funcional se incorporó al lenguaje de forma posterior.
 
-**Python** es súper limpio y fácil de leer, pero me chocó un poco que la función `lambda` esté restringida a una sola expresión. Si la lógica se complica un poquito, toca salirse del `lambda` y crear una función normal con `def`, lo que le quita un poco la gracia a hacerlo todo en una línea.
+Python es muy legible, pero la restricción de que `lambda` admita una sola expresión resulta incómoda. Cuando la lógica se complica, es necesario definir una función con `def`, lo que le resta practicidad.
 
-**¿Dónde noté más diferencias?**  
-Sin duda, en el problema de **Acumulación** (`foldLeft` / `reduce`). En Scala y Python es bastante directo sumar o acumular valores. En Java, en cambio, tuve que pelearme un poco más con `mapToDouble` y `.sum()`, o escribir un acumulador más largo, porque manejar tipos primitivos dentro de los Streams a veces da dolores de cabeza con el boxing/unboxing.
+Las mayores diferencias se notaron en el problema de acumulación (`foldLeft` / `reduce`). En Scala y Python acumular valores es directo, mientras que en Java fue necesario pasar por `mapToDouble` antes de usar `sum()`, ya que los Streams de objetos no permiten sumar directamente y hay que convertirlos a un Stream de primitivos para evitar el *boxing* y *unboxing*.
 
 ### 5.2 Conclusión
-Las funciones anónimas son el motor de la manipulación de datos moderna. Transforman la programación de listas de un enfoque imperativo (decirle a la máquina *cómo* hacer el bucle paso a paso) a un enfoque declarativo (decirle a la máquina *qué* queremos obtener). Esto no solo reduce drásticamente los errores por mutación de estado, sino que permite a los compiladores y motores de ejecución (como Spark o Java Streams) paralelizar el código automáticamente. Como vimos en el caso de Apache Spark, sin funciones anónimas puras e inmutables, el procesamiento distribuido de Big Data tal como lo conocemos hoy no sería posible.
+
+Las funciones anónimas son una herramienta central en la manipulación moderna de datos. Permiten pasar de un enfoque imperativo, en el que se indica paso a paso cómo recorrer una lista, a uno declarativo, en el que se expresa qué resultado se desea obtener. Esto reduce los errores asociados a la mutación de estado y facilita la paralelización del código.
+
+Como se vio en el Caso 1 (Apache Spark), esta característica es fundamental: al ser transformaciones sin efectos secundarios sobre datos inmutables, Spark puede repartirlas entre muchos nodos y, si alguno falla, volver a calcular solo la parte perdida sin alterar el resultado final.
 
 ---
 
 ## Referencias
-* Documentación oficial de Scala: https://docs.scala-lang.org
-* Apache Spark RDD Guide: https://spark.apache.org/docs/latest/rdd-programming-guide.html
-* Java Lambda Expressions: https://docs.oracle.com/javase/tutorial/java/javaOO/lambdaexpressions.html
-* Python Functional Programming: https://docs.python.org/3/howto/functional.html
+
+- Documentación oficial de Scala: <https://docs.scala-lang.org>
+- Apache Spark. RDD Programming Guide: <https://spark.apache.org/docs/latest/rdd-programming-guide.html>
+- Oracle. Lambda Expressions (Java Tutorials): <https://docs.oracle.com/javase/tutorial/java/javaOO/lambdaexpressions.html>
+- Python Software Foundation. Functional Programming HOWTO: <https://docs.python.org/3/howto/functional.html>
