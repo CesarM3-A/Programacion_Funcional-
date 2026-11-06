@@ -2,6 +2,6 @@
 <project version="4">
   <component name="ScalaCompilerConfiguration">
     <option name="separateProdTestSources" value="true" />
-    <profile name="sbt 1" modules="taller05,taller05.main,taller05.test" />
+    <profile name="sbt 1" modules="taller05,taller05.main,taller05.test,taller05_3283,taller05_3283.main,taller05_3283.test,taller05_4061,taller05_4061.main,taller05_4061.test" />
   </component>
 </project>
